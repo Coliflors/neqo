@@ -229,7 +229,7 @@
       <!-- Tarjeta producto -->
       <div class="product-card">
         <div class="product-card-img">
-          <img src="img/cards.jpg" alt="Tarjeta CeroRollo" class="product-img" />
+          <img src="img/tarjeta.webp" alt="Tarjeta CeroRollo" class="product-img" />
         </div>
         <div class="product-card-body">
           <div class="product-head">
