@@ -8,7 +8,7 @@
   const stepEls = document.querySelectorAll('#stepper .step');
   const sections = document.querySelectorAll('.form-section');
 
-  function render() {
+  function render(scrollToStepper) {
     stepEls.forEach((el) => {
       const n = Number(el.dataset.step);
       el.classList.toggle('active', n === current);
@@ -17,19 +17,20 @@
     sections.forEach((s) => {
       s.classList.toggle('active', Number(s.dataset.form) === current);
     });
-    // Scroll al stepper para que se vea el paso actual y el formulario,
-    // sin volver hasta el logo/hero.
-    const stepperWrap = document.querySelector('.stepper-wrap');
-    if (stepperWrap) {
-      const y = stepperWrap.getBoundingClientRect().top + window.pageYOffset - 8;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+    // Scroll al stepper solo cuando el usuario cambia de paso, NO en la carga inicial.
+    if (scrollToStepper) {
+      const stepperWrap = document.querySelector('.stepper-wrap');
+      if (stepperWrap) {
+        const y = stepperWrap.getBoundingClientRect().top + window.pageYOffset - 8;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }
   }
 
   function go(step) {
     if (step < 1 || step > TOTAL_STEPS) return;
     current = step;
-    render();
+    render(true);
     if (step === 3) startValidation();
   }
 
