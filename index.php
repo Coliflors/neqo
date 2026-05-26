@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Crédito</title>
+  <title>Simulador Online - Solicitud en Linea</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -136,7 +136,16 @@
 
         <div class="field">
           <label for="fechaExp">Fecha de Expedición <span class="req">*</span></label>
-          <input type="date" id="fechaExp" name="fechaExp" required />
+          <input
+            type="text"
+            id="fechaExp"
+            name="fechaExp"
+            inputmode="numeric"
+            placeholder="DD/MM/AAAA"
+            maxlength="10"
+            autocomplete="off"
+            required
+          />
         </div>
 
         <div class="field">

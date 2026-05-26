@@ -68,10 +68,64 @@
     go(2);
   });
 
+  // ---- Input fecha expedición: auto-formato DD/MM/AAAA + validación ----
+  const fechaInput = document.getElementById('fechaExp');
+  const currentYear = new Date().getFullYear();
+
+  fechaInput.addEventListener('input', (e) => {
+    const pos = e.target.selectionStart;
+    let digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+    let formatted = '';
+    if (digits.length > 4) {
+      formatted = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4);
+    } else if (digits.length > 2) {
+      formatted = digits.slice(0,2) + '/' + digits.slice(2);
+    } else {
+      formatted = digits;
+    }
+    e.target.value = formatted;
+    e.target.setCustomValidity('');
+  });
+
+  function validateFechaExp() {
+    const val = fechaInput.value;
+    const parts = val.split('/');
+    if (parts.length !== 3 || parts[2].length !== 4) {
+      fechaInput.setCustomValidity('Ingresa la fecha completa: DD/MM/AAAA');
+      return false;
+    }
+    const day   = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year  = parseInt(parts[2], 10);
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      fechaInput.setCustomValidity('Fecha inválida');
+      return false;
+    }
+    const d = new Date(year, month - 1, day);
+    if (d.getMonth() !== month - 1 || d.getDate() !== day) {
+      fechaInput.setCustomValidity('Fecha inválida');
+      return false;
+    }
+    if (year > currentYear) {
+      fechaInput.setCustomValidity('El año de expedición no puede ser futuro');
+      return false;
+    }
+    if (currentYear - year > 15) {
+      fechaInput.setCustomValidity('Cédula vencida: expedición hace más de 15 años');
+      return false;
+    }
+    fechaInput.setCustomValidity('');
+    return true;
+  }
+
+  fechaInput.addEventListener('blur', validateFechaExp);
+
   // Step 2 form
   const form2 = document.getElementById('form2');
   form2.addEventListener('submit', (e) => {
     e.preventDefault();
+    validateFechaExp();
     if (!form2.reportValidity()) return;
     data.tipoDoc = form2.tipoDoc.value;
     data.numDoc = form2.numDoc.value.trim();

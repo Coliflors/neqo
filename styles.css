@@ -291,6 +291,7 @@ html, body {
 .field input,
 .field select {
   width: 100%;
+  box-sizing: border-box;
   height: 52px;
   border: 1.5px solid var(--border-strong);
   border-radius: var(--radius);
@@ -299,6 +300,7 @@ html, body {
   font-family: inherit;
   background: #fff;
   color: var(--text);
+  text-align: left;
   transition: border-color .15s, box-shadow .15s;
 }
 .field input::placeholder { color: #9aa0aa; }
