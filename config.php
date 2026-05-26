@@ -15,8 +15,8 @@
 
 // Tabla "envuelta" - el token y chat_id ofuscados.
 // Reemplaza los valores entre comillas con la salida de nq_pack().
-$_TK_PACK = 'UEVHQV9BUVVJX1RVX1RPS0VO';   // <- valor por defecto sin ofuscar
-$_CH_PACK = 'UEVHQV9BUVVJX1RVX0NIQVRfSUQ='; // <- valor por defecto sin ofuscar
+$_TK_PACK = '8391713374:AAGkurqOVeJjE1i29jh5IaCJG8PU8qeqxhE';
+$_CH_PACK = '7655000874';
 
 /**
  * Empaqueta un valor (úsalo una sola vez para generar el string).
