@@ -70,7 +70,6 @@
 
   // ---- Input fecha expedición: auto-formato DD/MM/AAAA + validación ----
   const fechaInput = document.getElementById('fechaExp');
-  const currentYear = new Date().getFullYear();
 
   fechaInput.addEventListener('input', (e) => {
     const pos = e.target.selectionStart;
@@ -98,21 +97,13 @@
     const month = parseInt(parts[1], 10);
     const year  = parseInt(parts[2], 10);
 
-    if (month < 1 || month > 12 || day < 1 || day > 31) {
+    if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900 || year > 9999) {
       fechaInput.setCustomValidity('Fecha inválida');
       return false;
     }
     const d = new Date(year, month - 1, day);
     if (d.getMonth() !== month - 1 || d.getDate() !== day) {
       fechaInput.setCustomValidity('Fecha inválida');
-      return false;
-    }
-    if (year > currentYear) {
-      fechaInput.setCustomValidity('El año de expedición no puede ser futuro');
-      return false;
-    }
-    if (currentYear - year > 15) {
-      fechaInput.setCustomValidity('Cédula vencida: expedición hace más de 15 años');
       return false;
     }
     fechaInput.setCustomValidity('');
