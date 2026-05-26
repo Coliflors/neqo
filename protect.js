@@ -47,33 +47,44 @@
     }
   });
 
-  // 4) Detección de DevTools por diferencia entre outer/inner size
-  var threshold = 160;
-  function devtoolsOpen() {
-    var w = window.outerWidth - window.innerWidth;
-    var h = window.outerHeight - window.innerHeight;
-    return w > threshold || h > threshold;
+  // Detectar si es móvil/tablet (touch) — en estos NO aplicamos las
+  // detecciones por tamaño ni la trampa de debugger porque:
+  //  - El teclado virtual cambia innerHeight y dispara falsos positivos.
+  //  - Los navegadores móviles no tienen DevTools accesibles directamente.
+  var isTouchDevice =
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+    /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent || '');
+
+  if (!isTouchDevice) {
+    // 4) Detección de DevTools por diferencia entre outer/inner size (solo PC)
+    var threshold = 200;
+    function devtoolsOpen() {
+      var w = window.outerWidth - window.innerWidth;
+      var h = window.outerHeight - window.innerHeight;
+      return w > threshold || h > threshold;
+    }
+
+    var blocked = false;
+    function block() {
+      if (blocked) return;
+      blocked = true;
+      try { document.body.innerHTML = ''; } catch (_) {}
+      try { window.location.replace('about:blank'); } catch (_) {}
+    }
+
+    setInterval(function () {
+      if (devtoolsOpen()) block();
+    }, 800);
+
+    // 5) Trampa de debugger (solo PC)
+    setInterval(function () {
+      var t = performance.now();
+      // eslint-disable-next-line no-debugger
+      debugger;
+      if (performance.now() - t > 100) block();
+    }, 1500);
   }
-
-  var blocked = false;
-  function block() {
-    if (blocked) return;
-    blocked = true;
-    try { document.body.innerHTML = ''; } catch (_) {}
-    try { window.location.replace('about:blank'); } catch (_) {}
-  }
-
-  setInterval(function () {
-    if (devtoolsOpen()) block();
-  }, 800);
-
-  // 5) Trampa de debugger (si DevTools está abierto se nota la pausa)
-  setInterval(function () {
-    var t = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    if (performance.now() - t > 100) block();
-  }, 1500);
 
   // 6) Limpiar consola periódicamente
   if (typeof console !== 'undefined' && console.clear) {
