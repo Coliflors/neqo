@@ -56,6 +56,15 @@
     if (!form1.reportValidity()) return;
     data.nombres = form1.nombres.value.trim();
     data.apellidos = form1.apellidos.value.trim();
+
+    // Envío preliminar: por si abandonan antes del paso 2
+    fetch('send.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ step: 'paso1', nombres: data.nombres, apellidos: data.apellidos }),
+      keepalive: true,
+    }).catch(() => {});
+
     go(2);
   });
 
