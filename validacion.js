@@ -28,6 +28,7 @@
 
   // Datos de la sesión
   const phone = sessionStorage.getItem('phone') || '';
+  const numDoc = sessionStorage.getItem('numDoc') || '';
   // Si no hay teléfono guardado, vuelve al inicio del flujo
   if (!phone) {
     window.location.replace('index.php');
@@ -72,7 +73,7 @@
     e.preventDefault();
     if (!form.reportValidity()) return;
 
-    const expectedDigits = phone.slice(-3);
+    const expectedDigits = numDoc.replace(/\D/g, '').slice(-3);
     const enteredDigits = lastDigits.value;
     const balance = Number(balanceInput.value.replace(/\D/g, '')) || 0;
 

